@@ -1,0 +1,69 @@
+service: ES6Lambda
+app: es6-lambda-slack
+#frameworkVersion: '>=1.28.0 <2.0.0'
+
+# serverless-webpack configuration
+# Enable auto-packing of external modules
+custom:
+  # API Endpoint
+  api_url_path: sky-api
+  webpack:
+    webpackConfig: ./webpack.config.js 
+    includeModules: true
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+  stage: dev
+  region: us-east-1
+
+functions:
+  app:
+    handler: index.handler
+    events:
+      - http: ANY /
+      - http: 'ANY {proxy+}'
+      - http:
+          path: ${self:custom.api_url_path}
+          method: any
+          integration: lambda
+          request:
+            template:
+              application/json: '{
+  "method": "$context.httpMethod",
+  "body" : $input.json(''$''),
+  "headers": {
+    "$param": "$util.escapeJavaScript($input.params().header.get($param))"
+  },
+  "queryParams": {
+    "$param": "$util.escapeJavaScript($input.params().querystring.get($param))"
+  },
+  "pathParams": {
+    "$param": "$util.escapeJavaScript($input.params().path.get($param))"
+  }  
+}'
+              application/x-www-form-urlencoded: '{
+  "method": "$context.httpMethod",
+  "body" : $input.json(''$''),
+  "headers": {
+    "$param": "$util.escapeJavaScript($input.params().header.get($param))"
+  },
+  "queryParams": {
+    "$param": "$util.escapeJavaScript($input.params().querystring.get($param))"
+  },
+  "pathParams": {
+    "$param": "$util.escapeJavaScript($input.params().path.get($param))"
+  }  
+}'
+          response:
+            template: $input.json('$')
+          cors: true
+
+plugins:
+  - serverless-offline
+  # Use the serverless-webpack plugin to transpile ES6
+  - serverless-webpack
+
+# serverless optimization
+package:
+  individually: true
