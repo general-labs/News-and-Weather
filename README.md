@@ -14,7 +14,7 @@ News and weather feed based on Serverless ES6 NodeJs 10 (AWS stack).
 
 ##### Installation steps
 * `git clone git@github.com:general-labs/News-and-Weather.git && cd News-and-Weather`
-* Rename `resources/babelrc` to `.babelrc`
+* `mv resources/babelrc .babelrc`
 * `npm install`
 * Run locally: `sls offline`. Visit : `http://localhost:3000/`
 
